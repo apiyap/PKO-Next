@@ -33,7 +33,6 @@ IF NOT EXIST Dependencies (
     mkdir Dependencies
     cd Dependencies
     IF NOT EXIST Ogre (
-
         mklink /D Ogre ..\..\Ogre\ogre-next
         IF ERRORLEVEL 1 (
             echo Failed to create Dependency directory symlink. Run the script as Administrator.

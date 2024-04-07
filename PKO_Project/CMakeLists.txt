@@ -44,17 +44,44 @@ else()
 endif()
 
 include_directories( "./include" )
+include_directories( "./include/ImguiOgre" )
 # Ogre doesn't need this include, but we do because of Rapidjson in UnitTesting.cpp
 include_directories( "./Dependencies/Ogre/Dependencies/include" )
 
 add_recursive( ./src SOURCES )
 add_recursive( ./include HEADERS )
 
+set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui-1.90.4-docking" CACHE PATH "")
+if(NOT EXISTS ${IMGUI_DIR})
+message(STATUS "Downloading imgui")
+file(DOWNLOAD
+	https://github.com/ocornut/imgui/archive/v1.90.4-docking.tar.gz
+	"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui.tar.gz")
+execute_process(COMMAND ${CMAKE_COMMAND}
+	-E tar xf imgui.tar.gz WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/")
+endif()
+
+include_directories( ${IMGUI_DIR} )
+list(APPEND IMGUI_SOURCES
+${IMGUI_DIR}/imgui.cpp
+${IMGUI_DIR}/imgui_draw.cpp
+${IMGUI_DIR}/imgui_tables.cpp
+${IMGUI_DIR}/imgui_widgets.cpp
+${IMGUI_DIR}/imgui_demo.cpp)
+if(FREETYPE_FOUND)
+set(IMGUI_ENABLE_FREETYPE TRUE)
+list(APPEND IMGUI_SOURCES ${IMGUI_DIR}/misc/freetype/imgui_freetype.cpp)
+endif()
+
+
+set( MESHES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/extra/meshes" )
+
 if( APPLE )
 	if( APPLE_IOS )
 		file( GLOB_RECURSE RESOURCES ./src/*.storyboard )
 	endif()
 	set( RESOURCES ${RESOURCES}
+		${MESHES_DIR} 
 		${CMAKE_CURRENT_SOURCE_DIR}/bin/Data )
 
 	if( APPLE_IOS )
@@ -80,7 +107,7 @@ if( APPLE )
 	)
 endif()
 
-add_executable( ${PROJECT_NAME} WIN32 MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${RESOURCES} )
+add_executable( ${PROJECT_NAME} WIN32 MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${IMGUI_SOURCES} ${RESOURCES} )
 target_link_libraries( ${PROJECT_NAME} ${OGRE_LIBRARIES} )
 
 if( APPLE )
@@ -130,3 +157,11 @@ install( DIRECTORY
 	"${EXECUTABLE_OUTPUT_PATH}/Data"
 	"${OGRE_SOURCE}/Dependencies/bin/${CMAKE_BUILD_TYPE}"
 	DESTINATION "${CMAKE_INSTALL_PREFIX}")
+
+install( DIRECTORY 
+	"${MESHES_DIR}"
+	DESTINATION "${CMAKE_INSTALL_PREFIX}/Data")
+
+install( FILES 
+	"${CMAKE_CURRENT_SOURCE_DIR}/extra/resources2.cfg"
+	DESTINATION "${CMAKE_INSTALL_PREFIX}/Data")	
