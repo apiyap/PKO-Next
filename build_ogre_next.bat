@@ -2,12 +2,10 @@
 @echo off
 SETLOCAL
 :: Configuration
-set PKO_VERSION=v0.0.1
 set OGRE_BRANCH_NAME=master
 set GENERATOR="Visual Studio 16 2019"
 set PLATFORM=x64
 set BUILD_TYPE="Release"
-set OGRE_INSTALL=%~dp0INSTALL_PKO_Next_%OGRE_BRANCH_NAME%_%PKO_VERSION%_%PLATFORM%
 
 set CMAKE_BIN_x86="C:\Program Files (x86)\CMake\bin\cmake.exe"
 set CMAKE_BIN_x64="C:\Program Files\CMake\bin\cmake.exe"
@@ -75,7 +73,7 @@ IF NOT EXIST build (
 
 cd build
 echo --- Running CMake configure ---
-%CMAKE_BIN% -D CMAKE_INSTALL_PREFIX=%OGRE_INSTALL% -D OGRE_CONFIG_THREAD_PROVIDER=0 -D OGRE_CONFIG_THREADS=0 -D OGRE_BUILD_COMPONENT_SCENE_FORMAT=1 -D OGRE_BUILD_SAMPLES2=1 -D OGRE_BUILD_TESTS=1 -D OGRE_DEPENDENCIES_DIR=..\..\ogre-next-deps\build\ogredeps -G %GENERATOR% -A %PLATFORM% ..
+%CMAKE_BIN% -D OGRE_CONFIG_THREAD_PROVIDER=0 -D OGRE_CONFIG_THREADS=0 -D OGRE_BUILD_COMPONENT_SCENE_FORMAT=1 -D OGRE_BUILD_SAMPLES2=1 -D OGRE_BUILD_TESTS=1 -D OGRE_DEPENDENCIES_DIR=..\..\ogre-next-deps\build\ogredeps -G %GENERATOR% -A %PLATFORM% ..
 echo --- Building Ogre (Debug) ---
 %CMAKE_BIN% --build . --config Debug
 %CMAKE_BIN% --build . --target install --config Debug
