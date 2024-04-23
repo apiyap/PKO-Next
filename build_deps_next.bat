@@ -41,6 +41,7 @@ IF NOT EXIST ogre-next-deps (
 	git clone --recurse-submodules --shallow-submodules https://github.com/apiyap/ogre-next-deps
 ) ELSE (
 	echo --- ogre-next-deps repo detected. Cloning skipped ---
+	@REM git submodule update --init --recursive
 )
 cd ogre-next-deps
 

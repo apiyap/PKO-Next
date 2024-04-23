@@ -1,0 +1,6 @@
+[submodule "Ogre/ogre-next-deps"]
+	path = Ogre/ogre-next-deps
+	url = https://github.com/apiyap/ogre-next-deps
+[submodule "Ogre/ogre-next"]
+	path = Ogre/ogre-next
+	url = https://github.com/OGRECave/ogre-next
