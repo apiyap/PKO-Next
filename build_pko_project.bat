@@ -44,9 +44,11 @@ IF NOT EXIST Dependencies (
 )
 
 
-IF NOT EXIST build (
-	mkdir build
+IF EXIST build (
+    rd build /S /Q
 )
+
+mkdir build
 
 cd build
 echo --- Running CMake configure ---

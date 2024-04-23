@@ -43,9 +43,13 @@ IF NOT EXIST ogre-next-deps (
 	echo --- ogre-next-deps repo detected. Cloning skipped ---
 )
 cd ogre-next-deps
-IF NOT EXIST build (
-	mkdir build
+
+IF EXIST build (
+    rd build /S /Q
 )
+
+mkdir build
+
 cd build
 echo --- Building ogre-next-deps ---
 %CMAKE_BIN% -G %GENERATOR% -A %PLATFORM% ..
@@ -55,41 +59,6 @@ echo --- Building ogre-next-deps ---
 %CMAKE_BIN% --build . --target install --config Release
 
 cd ../../
-IF NOT EXIST ogre-next (
-	echo --- Cloning Ogre %OGRE_BRANCH_NAME% ---
-	git clone --branch %OGRE_BRANCH_NAME% https://github.com/OGRECave/ogre-next
-)
-cd ogre-next
-IF NOT EXIST Dependencies (
-	mklink /D Dependencies ..\ogre-next-deps\build\ogredeps
-	IF ERRORLEVEL 1 (
-		echo Failed to create Dependency directory symlink. Run the script as Administrator.
-		EXIT /B 1
-	)
-)
-
-IF NOT EXIST build (
-	mkdir build
-)
-
-cd build
-echo --- Running CMake configure ---
-%CMAKE_BIN% -D OGRE_CONFIG_THREAD_PROVIDER=0 ^
--D OGRE_CONFIG_THREADS=0 ^
--D OGRE_BUILD_COMPONENT_SCENE_FORMAT=1 ^
--D OGRE_BUILD_SAMPLES2=1 ^
--D OGRE_BUILD_TESTS=1 ^
--D OGRE_DEPENDENCIES_DIR=..\..\ogre-next-deps\build\ogredeps ^
--G %GENERATOR% -A %PLATFORM% ..
-echo --- Building Ogre (Debug) ---
-%CMAKE_BIN% --build . --config Debug
-%CMAKE_BIN% --build . --target install --config Debug
-echo --- Building Ogre (Release) ---
-%CMAKE_BIN% --build . --config Release
-%CMAKE_BIN% --build . --target install --config Release
-
-cd ../../../
-
 
 echo Done!
 

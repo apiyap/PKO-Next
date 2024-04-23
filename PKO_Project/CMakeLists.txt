@@ -17,6 +17,7 @@ project( PKO_Project )
 include( CMake/Bootstrap.cmake )
 include( CMake/Dependencies/OGRE.cmake )
 
+
 if( APPLE )
 	set( CMAKE_CXX_STANDARD 11 )
 endif()
@@ -51,6 +52,91 @@ include_directories( "./Dependencies/Ogre/Dependencies/include" )
 add_recursive( ./src SOURCES )
 add_recursive( ./include HEADERS )
 
+set(BUILD_COMMAND_OPTS --target install --config ${CMAKE_BUILD_TYPE})
+set(BUILD_COMMAND_COMMON ${CMAKE_COMMAND}
+  -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+  -G ${CMAKE_GENERATOR}
+  -DCMAKE_INSTALL_PREFIX="${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/install"
+  -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}
+  -DCMAKE_GENERATOR_TOOLSET=${CMAKE_GENERATOR_TOOLSET}
+  -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
+  -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE # allow linking into a shared lib
+  )
+
+#   if(MSVC OR MINGW OR SKBUILD) # other platforms dont need this
+#   message(STATUS "Building zlib") # only needed for Assimp
+#   file(DOWNLOAD
+# 	  https://www.zlib.net/zlib131.zip
+# 	  ${PROJECT_BINARY_DIR}/zlib131.zip
+# 	  EXPECTED_HASH SHA256=72af66d44fcc14c22013b46b814d5d2514673dda3d115e64b690c1ad636e7b17)
+#   execute_process(COMMAND ${CMAKE_COMMAND}
+# 	  -E tar xf zlib131.zip WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+#   execute_process(COMMAND ${BUILD_COMMAND_COMMON}
+# 	  -DBUILD_SHARED_LIBS=${OGREDEPS_SHARED}
+# 	  ${PROJECT_BINARY_DIR}/zlib-1.3.1
+# 	  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/zlib-1.3.1)
+#   execute_process(COMMAND ${CMAKE_COMMAND}
+# 	  --build ${PROJECT_BINARY_DIR}/zlib-1.3.1 ${BUILD_COMMAND_OPTS})
+
+# #   message(STATUS "Building Assimp")
+# #   file(DOWNLOAD
+# # 		  https://github.com/assimp/assimp/archive/refs/tags/v5.2.5.zip
+# # 	  ${PROJECT_BINARY_DIR}/v5.2.5.tar.gz)
+# #   execute_process(COMMAND ${CMAKE_COMMAND}
+# # 	  -E tar xf v5.2.5.tar.gz WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+# #   execute_process(COMMAND ${BUILD_COMMAND_COMMON}
+# # 	  -DZLIB_ROOT=${OGREDEPS_PATH}
+# # 	  -DBUILD_SHARED_LIBS=OFF
+# # 	  -DASSIMP_BUILD_TESTS=OFF
+# # 	  -DASSIMP_NO_EXPORT=TRUE
+# # 	  -DASSIMP_BUILD_OGRE_IMPORTER=OFF
+# # 	  -DASSIMP_BUILD_ASSIMP_TOOLS=OFF
+# # 	  ${PROJECT_BINARY_DIR}/assimp-5.2.5
+# # 	  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/assimp-5.2.5)
+# #   execute_process(COMMAND ${CMAKE_COMMAND}
+# # 	--build ${PROJECT_BINARY_DIR}/assimp-5.2.5 ${BUILD_COMMAND_OPTS})
+# endif()
+
+# set(FREETYPE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/freetype-2.13.0" CACHE PATH "")
+# if(NOT EXISTS ${FREETYPE_DIR})
+#   message(STATUS "Building freetype")
+#   file(DOWNLOAD
+# 	  https://download-mirror.savannah.gnu.org/releases/freetype/freetype-2.13.0.tar.gz
+# 	  "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/freetype.tar.gz")
+#   execute_process(COMMAND ${CMAKE_COMMAND}
+# 	  -E tar xf freetype.tar.gz WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/")
+# endif()	  
+  # patch toolchain for iOS
+#   execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+# 	  ${PROJECT_SOURCE_DIR}/CMake/toolchain/ios.toolchain.xcode.cmake
+# 	  freetype-2.13.0/builds/cmake/iOS.cmake
+# 	  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+#   execute_process(COMMAND ${BUILD_COMMAND_COMMON}
+# 	  -DBUILD_SHARED_LIBS=${OGREDEPS_SHARED}
+# 	  -DCMAKE_DISABLE_FIND_PACKAGE_PNG=TRUE # disable third-party deps
+# 	  -DCMAKE_DISABLE_FIND_PACKAGE_HarfBuzz=TRUE
+# 	  -DCMAKE_DISABLE_FIND_PACKAGE_BZip2=TRUE
+# 	  -DCMAKE_DISABLE_FIND_PACKAGE_BrotliDec=TRUE
+# 	  # workaround for broken iOS toolchain in freetype
+# 	  -DPROJECT_SOURCE_DIR=${FREETYPE_DIR}
+# 	  ${FREETYPE_DIR}
+# 	  WORKING_DIRECTORY ${FREETYPE_DIR}/objs)
+#   execute_process(COMMAND ${CMAKE_COMMAND}
+# 	  --build ${FREETYPE_DIR}/objs ${BUILD_COMMAND_OPTS} )
+
+# set(FREETYPE_INCLUDE_DIRS "${FREETYPE_DIR}/include")
+# set(FREETYPE_FOUND 1)
+ 
+# Include necessary submodules
+set(CMAKE_MODULE_PATH
+"${PROJECT_SOURCE_DIR}/Dependencies/Ogre/CMake/Utils"
+"${PROJECT_SOURCE_DIR}/Dependencies/Ogre/CMake/Packages"
+)
+
+find_package(freetype)
+find_package(ZLIB)
+find_package(ZZip)
+
 set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui-1.90.4-docking" CACHE PATH "")
 if(NOT EXISTS ${IMGUI_DIR})
 message(STATUS "Downloading imgui")
@@ -61,7 +147,7 @@ execute_process(COMMAND ${CMAKE_COMMAND}
 	-E tar xf imgui.tar.gz WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/")
 endif()
 
-include_directories( ${IMGUI_DIR} )
+include_directories( ${IMGUI_DIR} ${ZLIB_INCLUDE_DIRS} ${BZIP2_INCLUDE_DIR})
 list(APPEND IMGUI_SOURCES
 ${IMGUI_DIR}/imgui.cpp
 ${IMGUI_DIR}/imgui_draw.cpp
@@ -69,8 +155,13 @@ ${IMGUI_DIR}/imgui_tables.cpp
 ${IMGUI_DIR}/imgui_widgets.cpp
 ${IMGUI_DIR}/imgui_demo.cpp)
 if(FREETYPE_FOUND)
+message(STATUS "Found freetype lib")
+message(STATUS "freetype include: ${FREETYPE_INCLUDE_DIRS}")
+include_directories( ${FREETYPE_INCLUDE_DIRS})
 set(IMGUI_ENABLE_FREETYPE TRUE)
 list(APPEND IMGUI_SOURCES ${IMGUI_DIR}/misc/freetype/imgui_freetype.cpp)
+else()
+message(STATUS "NOT Found freetype lib")
 endif()
 
 
@@ -107,8 +198,11 @@ if( APPLE )
 	)
 endif()
 
+ 
 add_executable( ${PROJECT_NAME} WIN32 MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${IMGUI_SOURCES} ${RESOURCES} )
-target_link_libraries( ${PROJECT_NAME} ${OGRE_LIBRARIES} )
+
+target_link_libraries( ${PROJECT_NAME} ${OGRE_LIBRARIES}  ${FREETYPE_LIBRARIES} ${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES})
+ 
 
 if( APPLE )
 	set_target_properties( ${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_ENABLE_BITCODE "NO" )

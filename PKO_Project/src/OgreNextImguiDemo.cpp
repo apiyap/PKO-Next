@@ -243,7 +243,7 @@ namespace Demo
                 CharToOem( path, oemPath );
                 mWriteAccessFolder = std::string( oemPath );
 #    endif
-                mWriteAccessFolder += "/PKO_Prpject/";
+                mWriteAccessFolder += "/PKO_Project/";
 
                 // Attempt to create directory where config files go
                 if( !CreateDirectoryA( mWriteAccessFolder.c_str(), NULL ) &&
@@ -272,8 +272,8 @@ namespace Demo
             }
             else
             {
-                // Create "~/.config/PKO_Prpject"
-                mWriteAccessFolder += "/PKO_Prpject/";
+                // Create "~/.config/PKO_Project"
+                mWriteAccessFolder += "/PKO_Project/";
                 result = mkdir( mWriteAccessFolder.c_str(), S_IRWXU | S_IRWXG );
                 errorReason = errno;
 
@@ -291,7 +291,7 @@ namespace Demo
                                                                    create:YES
                                                                     error:nil];
             // Create "pathToCache/PKO_Prpject"
-            mWriteAccessFolder = Ogre::String( libUrl.absoluteURL.path.UTF8String ) + "/PKO_Prpject/";
+            mWriteAccessFolder = Ogre::String( libUrl.absoluteURL.path.UTF8String ) + "/PKO_Project/";
             const int result = mkdir( mWriteAccessFolder.c_str(), S_IRWXU | S_IRWXG );
             const int errorReason = errno;
 
