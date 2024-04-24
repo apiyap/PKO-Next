@@ -92,8 +92,25 @@ namespace Demo
             ImGuiIO& io = ImGui::GetIO();
             io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
             io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
+            io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+            io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+            io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+            io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+
             io.BackendPlatformName = "imgui_impl_ogre_next_sdl";
 
+            // Setup Dear ImGui style
+            ImGui::StyleColorsDark();
+            //ImGui::StyleColorsLight();
+
+            // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+            ImGuiStyle& style = ImGui::GetStyle();
+            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+            {
+                style.WindowRounding = 0.0f;
+                style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+            }
+            
             // Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array.
             io.KeyMap[ImGuiKey_Tab] = SDL_SCANCODE_TAB;
             io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
@@ -195,6 +212,23 @@ namespace Demo
         {
             Ogre::Vector2 mousePos( arg.motion.x, arg.motion.y );
             io.MousePos = ImVec2(mousePos.x, mousePos.y);
+        }
+
+        if( arg.type == SDL_MOUSEWHEEL )
+        {
+            //IMGUI_DEBUG_LOG("wheel %.2f %.2f, precise %.2f %.2f\n", (float)event->wheel.x, (float)event->wheel.y, event->wheel.preciseX, event->wheel.preciseY);
+#if SDL_VERSION_ATLEAST(2,0,18) // If this fails to compile on Emscripten: update to latest Emscripten!
+            float wheel_x = -arg.wheel.preciseX;
+            float wheel_y = arg.wheel.preciseY;
+#else
+            float wheel_x = -(float)arg.wheel.x;
+            float wheel_y = (float)arg.wheel.y;
+#endif
+#ifdef __EMSCRIPTEN__
+            wheel_x /= 100.0f;
+#endif
+            io.AddMouseSourceEvent(arg.wheel.which == SDL_TOUCH_MOUSEID ? ImGuiMouseSource_TouchScreen : ImGuiMouseSource_Mouse);
+            io.AddMouseWheelEvent(wheel_x, wheel_y);
         }
 
         TutorialGameState::mouseMoved( arg );

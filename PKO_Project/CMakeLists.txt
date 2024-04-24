@@ -56,76 +56,80 @@ set(BUILD_COMMAND_OPTS --target install --config ${CMAKE_BUILD_TYPE})
 set(BUILD_COMMAND_COMMON ${CMAKE_COMMAND}
   -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
   -G ${CMAKE_GENERATOR}
-  -DCMAKE_INSTALL_PREFIX="${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/install"
+  -DCMAKE_INSTALL_PREFIX="${CMAKE_CURRENT_SOURCE_DIR}/pkodeps"
   -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}
   -DCMAKE_GENERATOR_TOOLSET=${CMAKE_GENERATOR_TOOLSET}
   -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
   -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE # allow linking into a shared lib
   )
 
-#   if(MSVC OR MINGW OR SKBUILD) # other platforms dont need this
-#   message(STATUS "Building zlib") # only needed for Assimp
+  if(MSVC OR MINGW OR SKBUILD) # other platforms dont need this
+
+  if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/pkodeps")
+  message(STATUS "Create directory ${CMAKE_CURRENT_SOURCE_DIR}/pkodeps")
+  	file( MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/pkodeps" )
+  endif()
+#   message(STATUS "Building Assimp")
 #   file(DOWNLOAD
-# 	  https://www.zlib.net/zlib131.zip
-# 	  ${PROJECT_BINARY_DIR}/zlib131.zip
-# 	  EXPECTED_HASH SHA256=72af66d44fcc14c22013b46b814d5d2514673dda3d115e64b690c1ad636e7b17)
+# 		  https://github.com/assimp/assimp/archive/refs/tags/v5.2.5.zip
+# 	  ${PROJECT_BINARY_DIR}/v5.2.5.tar.gz)
 #   execute_process(COMMAND ${CMAKE_COMMAND}
-# 	  -E tar xf zlib131.zip WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+# 	  -E tar xf v5.2.5.tar.gz WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 #   execute_process(COMMAND ${BUILD_COMMAND_COMMON}
-# 	  -DBUILD_SHARED_LIBS=${OGREDEPS_SHARED}
-# 	  ${PROJECT_BINARY_DIR}/zlib-1.3.1
-# 	  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/zlib-1.3.1)
+# 	  -DZLIB_ROOT=${OGREDEPS_PATH}
+# 	  -DBUILD_SHARED_LIBS=OFF
+# 	  -DASSIMP_BUILD_TESTS=OFF
+# 	  -DASSIMP_NO_EXPORT=TRUE
+# 	  -DASSIMP_BUILD_OGRE_IMPORTER=OFF
+# 	  -DASSIMP_BUILD_ASSIMP_TOOLS=OFF
+# 	  ${PROJECT_BINARY_DIR}/assimp-5.2.5
+# 	  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/assimp-5.2.5)
 #   execute_process(COMMAND ${CMAKE_COMMAND}
-# 	  --build ${PROJECT_BINARY_DIR}/zlib-1.3.1 ${BUILD_COMMAND_OPTS})
+# 	--build ${PROJECT_BINARY_DIR}/assimp-5.2.5 ${BUILD_COMMAND_OPTS})
 
-# #   message(STATUS "Building Assimp")
-# #   file(DOWNLOAD
-# # 		  https://github.com/assimp/assimp/archive/refs/tags/v5.2.5.zip
-# # 	  ${PROJECT_BINARY_DIR}/v5.2.5.tar.gz)
-# #   execute_process(COMMAND ${CMAKE_COMMAND}
-# # 	  -E tar xf v5.2.5.tar.gz WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
-# #   execute_process(COMMAND ${BUILD_COMMAND_COMMON}
-# # 	  -DZLIB_ROOT=${OGREDEPS_PATH}
-# # 	  -DBUILD_SHARED_LIBS=OFF
-# # 	  -DASSIMP_BUILD_TESTS=OFF
-# # 	  -DASSIMP_NO_EXPORT=TRUE
-# # 	  -DASSIMP_BUILD_OGRE_IMPORTER=OFF
-# # 	  -DASSIMP_BUILD_ASSIMP_TOOLS=OFF
-# # 	  ${PROJECT_BINARY_DIR}/assimp-5.2.5
-# # 	  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/assimp-5.2.5)
-# #   execute_process(COMMAND ${CMAKE_COMMAND}
-# # 	--build ${PROJECT_BINARY_DIR}/assimp-5.2.5 ${BUILD_COMMAND_OPTS})
-# endif()
+# message(STATUS "Building Bullet")
+# set(BULLET_DIR "${PROJECT_BINARY_DIR}/3.25.tar.gz" CACHE PATH "")
+# # if(NOT EXISTS ${BULLET_DIR})
+# message(STATUS "Downloading Bullet")
+# Set(FETCHCONTENT_QUIET FALSE)
+# file(DOWNLOAD
+# 	https://github.com/bulletphysics/bullet3/archive/refs/tags/3.25.tar.gz
+# 	${PROJECT_BINARY_DIR}/3.25.tar.gz
+# 	SHOW_PROGRESS
+# 	STATUS DOWNLOAD_RESULT)
+# 	list(GET DOWNLOAD_RESULT 0 DOWNLOAD_RESULT_CODE)
+# 	if(NOT DOWNLOAD_RESULT_CODE EQUAL 0)
+# 		message(FATAL_ERROR "Failed downloading! Error: ${DOWNLOAD_RESULT}.")
+# 	endif()
 
-# set(FREETYPE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/freetype-2.13.0" CACHE PATH "")
-# if(NOT EXISTS ${FREETYPE_DIR})
-#   message(STATUS "Building freetype")
-#   file(DOWNLOAD
-# 	  https://download-mirror.savannah.gnu.org/releases/freetype/freetype-2.13.0.tar.gz
-# 	  "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/freetype.tar.gz")
-#   execute_process(COMMAND ${CMAKE_COMMAND}
-# 	  -E tar xf freetype.tar.gz WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/")
-# endif()	  
-  # patch toolchain for iOS
-#   execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-# 	  ${PROJECT_SOURCE_DIR}/CMake/toolchain/ios.toolchain.xcode.cmake
-# 	  freetype-2.13.0/builds/cmake/iOS.cmake
-# 	  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
-#   execute_process(COMMAND ${BUILD_COMMAND_COMMON}
-# 	  -DBUILD_SHARED_LIBS=${OGREDEPS_SHARED}
-# 	  -DCMAKE_DISABLE_FIND_PACKAGE_PNG=TRUE # disable third-party deps
-# 	  -DCMAKE_DISABLE_FIND_PACKAGE_HarfBuzz=TRUE
-# 	  -DCMAKE_DISABLE_FIND_PACKAGE_BZip2=TRUE
-# 	  -DCMAKE_DISABLE_FIND_PACKAGE_BrotliDec=TRUE
-# 	  # workaround for broken iOS toolchain in freetype
-# 	  -DPROJECT_SOURCE_DIR=${FREETYPE_DIR}
-# 	  ${FREETYPE_DIR}
-# 	  WORKING_DIRECTORY ${FREETYPE_DIR}/objs)
-#   execute_process(COMMAND ${CMAKE_COMMAND}
-# 	  --build ${FREETYPE_DIR}/objs ${BUILD_COMMAND_OPTS} )
+# message("Extracting file ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/bullet3.tar.gz...")	
+# execute_process(COMMAND ${CMAKE_COMMAND}
+# 	-E tar xf 3.25.tar.gz WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+# # endif()
 
-# set(FREETYPE_INCLUDE_DIRS "${FREETYPE_DIR}/include")
-# set(FREETYPE_FOUND 1)
+# execute_process(COMMAND ${BUILD_COMMAND_COMMON}
+# 	-DBUILD_SHARED_LIBS=OFF
+# 	-DINSTALL_LIBS=ON
+# 	-DCMAKE_POSITION_INDEPENDENT_CODE=ON
+# 	-DUSE_MSVC_RUNTIME_LIBRARY_DLL=ON
+# 	-DBUILD_PYBULLET=OFF
+# 	-DUSE_DOUBLE_PRECISION=OFF
+# 	-DBUILD_CPU_DEMOS=OFF
+# 	-DBUILD_BULLET2_DEMOS=OFF
+# 	-DBUILD_EXTRAS=OFF
+# 	-DBUILD_EGL=OFF
+# 	-DBUILD_ENET=OFF
+# 	-DBUILD_UNIT_TESTS=OFF
+# 	-DCMAKE_RELWITHDEBINFO_POSTFIX= # fixes FindBullet on MSVC
+# 	-DBUILD_CLSOCKET=OFF
+# 	${PROJECT_BINARY_DIR}/bullet3-3.25
+# 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/bullet3-3.25)
+# execute_process(COMMAND ${CMAKE_COMMAND}
+# --build ${PROJECT_BINARY_DIR}/bullet3-3.25 ${BUILD_COMMAND_OPTS})
+# set(BULLET_ROOT ${OGREDEPS_PATH})
+
+endif()
+
  
 # Include necessary submodules
 set(CMAKE_MODULE_PATH
@@ -137,6 +141,7 @@ find_package(freetype)
 find_package(ZLIB)
 find_package(ZZip)
 
+message(STATUS "Building imgui")
 set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui-1.90.4-docking" CACHE PATH "")
 if(NOT EXISTS ${IMGUI_DIR})
 message(STATUS "Downloading imgui")
