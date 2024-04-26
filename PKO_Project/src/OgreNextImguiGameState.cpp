@@ -42,13 +42,17 @@ namespace Demo
 
 
     OgreNextImguiGameState::OgreNextImguiGameState( const Ogre::String &helpDescription ) :
-        TutorialGameState( helpDescription )
+        TutorialGameState( helpDescription ) , logwin(0)
     {
 
     }
     //-----------------------------------------------------------------------------------
     void OgreNextImguiGameState::createScene01(void)
     {
+        // 
+        logwin = new LogWindow();
+        LogManager::getSingleton().getDefaultLog()->addListener(logwin);
+        LogManager::getSingleton().logMessage("Load a mesh to show Ogre rendering something.");
         // Load a mesh to show Ogre rendering something.
         {
             Ogre::SceneManager* sceneManager = mGraphicsSystem->getSceneManager();
@@ -80,13 +84,14 @@ namespace Demo
             light->setType( Ogre::Light::LT_DIRECTIONAL );
             light->setDirection( Ogre::Vector3( -1, -1, -1 ).normalisedCopy() );
         }
-
+        LogManager::getSingleton().logMessage("Register imgui for rendering.");
         //Register imgui for rendering
         Ogre::Root::getSingleton().addFrameListener(new ImguiFrameListener());
+        LogManager::getSingleton().logMessage("initialise with your target workspace.");
         //initialise with your target workspace.
         ImguiManager::getSingleton().init(mGraphicsSystem->getCompositorWorkspace());
 
-
+        LogManager::getSingleton().logMessage("Setup imgui key codes for SDL2");
         //Setup imgui key codes for SDL2
         {
             ImGuiIO& io = ImGui::GetIO();
@@ -192,6 +197,8 @@ namespace Demo
 
         bool show_demo_window = true;
         ImGui::ShowDemoWindow(&show_demo_window);
+        
+        logwin->DrawWindow("Log", &show_log);
 
         ImGui::End();
 

@@ -6,6 +6,7 @@
 #include "TutorialGameState.h"
 
 #include <OgreFrameListener.h>
+#include "LogWindow.h"
 
 namespace Demo
 {
@@ -30,6 +31,9 @@ namespace Demo
 
     private:
         void _keyEvent( const SDL_KeyboardEvent &arg, bool keyPressed );
+        
+        bool show_log = true;
+        LogWindow*  logwin;
     };
 }
 

@@ -41,6 +41,9 @@ namespace Demo
     void TutorialGameState::_notifyGraphicsSystem( GraphicsSystem *graphicsSystem )
     {
         mGraphicsSystem = graphicsSystem;
+
+        // if(mGraphicsSystem)
+        //     mCameraController = new CameraController(mGraphicsSystem);
     }
     //-----------------------------------------------------------------------------------
     void TutorialGameState::createScene01() { createDebugTextOverlay(); }
